@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExamEase | Smart Exam Scheduler + Dynamic Venue & Seating</title>
+<style>
+:root{--primary:#4f46e5;--bg:#f5f7fb;--text:#1e293b;--muted:#64748b;--border:#e2e8f0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:8px;padding:10px 14px}.primary{background:var(--primary);color:white}.secondary{background:#eef2ff;color:var(--primary)}.danger{background:#fee2e2;color:#b91c1c}.layout{display:flex;min-height:100vh}.sidebar{width:235px;background:#111827;color:white;padding:22px 15px;flex-shrink:0}.brand{font-size:23px;font-weight:bold;margin-bottom:7px}.brand span{color:#a5b4fc}.tagline{font-size:11px;color:#9ca3af;margin-bottom:25px}.nav{display:flex;flex-direction:column;gap:6px}.nav button{background:transparent;color:#cbd5e1;text-align:left;padding:12px}.nav button:hover,.nav button.active{background:#312e81;color:white}.main{flex:1;min-width:0}.topbar{height:70px;background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 25px}.content{padding:25px;max-width:1450px;margin:auto}.page-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px}h1{font-size:27px;margin:0 0 7px}h2{font-size:17px;margin:0 0 15px}.muted{color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}.card{background:white;border:1px solid var(--border);border-radius:13px;padding:19px;margin-bottom:18px}.stat-label{font-size:13px;color:var(--muted)}.stat-number{font-size:30px;font-weight:bold;margin:12px 0 5px}.stat-icon{float:right;font-size:22px;background:#eef2ff;padding:9px;border-radius:10px}.grid2{display:grid;grid-template-columns:1.2fr 1fr;gap:18px}.actions{display:flex;gap:8px;flex-wrap:wrap}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px 9px;border-bottom:1px solid var(--border);vertical-align:top}th{background:#f8fafc;color:#64748b}.table-wrap{overflow-x:auto}.badge{display:inline-block;border-radius:20px;padding:5px 9px;font-size:11px;font-weight:bold;background:#dcfce7;color:#166534}.badge.warn{background:#fef3c7;color:#92400e}.badge.bad{background:#fee2e2;color:#991b1b}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:7px}.field label{font-size:13px;font-weight:bold}.field input,.field select{padding:11px;border:1px solid #cbd5e1;border-radius:8px;background:white;width:100%;min-width:0}.full{grid-column:1/-1}.notice{padding:13px;border-radius:9px;background:#eef2ff;color:#3730a3;font-size:13px;line-height:1.6;margin-bottom:15px}.empty{padding:22px;text-align:center;color:var(--muted)}.footer{text-align:center;font-size:12px;color:var(--muted);padding:12px}hr{border:0;border-top:1px solid var(--border);margin:18px 0}@media(max-width:950px){.sidebar{width:200px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}.content{padding:17px}}@media(max-width:620px){.layout{display:block}.sidebar{width:100%;padding:13px}.tagline{display:none}.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.nav button{font-size:12px;padding:9px}.topbar{height:58px;padding:0 14px}.content{padding:13px}.card{padding:13px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}h1{font-size:23px}}@media print{.sidebar,.topbar,.no-print,.footer{display:none!important}.content{padding:0}body{background:white}}
+
+.qr-box{display:flex;flex-direction:column;align-items:center;gap:10px;padding:15px;border:1px dashed #cbd5e1;border-radius:12px;background:#f8fafc}
+.seat-grid{display:grid;gap:7px;margin-top:15px;overflow:auto}
+.seat{min-height:72px;padding:7px;border:1px solid #cbd5e1;border-radius:8px;background:white;font-size:11px;text-align:center}
+.seat.empty{background:#f8fafc;color:#94a3b8}
+.seat.same-exam{border:2px solid #ef4444;background:#fff1f2}
+.seat .seatno{font-weight:bold;color:#4f46e5}
+.kpi{font-size:12px;color:#64748b}
+.student-card{display:grid;grid-template-columns:1fr auto;gap:15px;align-items:center}
+.qr-canvas{background:white;padding:8px;border-radius:8px}
+@media print{.print-only{display:block!important}}
+.print-only{display:none}
+</style>
+</head>
+<body><div class="layout"><aside class="sidebar"><div class="brand">Exam<span>Ease</span> 🎓</div><div class="tagline">SMART EXAM MANAGEMENT</div><nav class="nav"><button class="active" data-page="dashboard">▦ Dashboard</button>
+<button data-page="exams">📝 Exams</button>
+<button data-page="students">👥 Students</button>
+<button data-page="rooms">🏫 Rooms</button>
+<button data-page="invigilators">👨‍🏫 Invigilators</button>
+<button data-page="slots">🕒 Time Slots</button>
+<button data-page="timetable">📅 Timetable</button>
+<button data-page="seating">🪑 Seating Arrangement</button>
+<button data-page="venue">🎫 Student Venue</button>
+<button data-page="qr">▣ QR Management</button>
+<button data-page="conflicts">⚠ Conflict Checker</button>
+<button data-page="reports">📊 Reports</button></nav></aside><main class="main"><header class="topbar"><strong id="topTitle">Dashboard</strong><small>Hackathon Prototype · Demo</small></header><div class="content" id="content"></div><div class="footer">ExamEase • Exam Timetabling & Invigilation Scheduling</div></main></div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10).toUpperCase();
+
+const initial={
+ exams:[
+  {id:'EX101',name:'Mathematics',date:'2026-10-05',students:8,duration:2},
+  {id:'EX102',name:'Programming in C',date:'2026-10-05',students:7,duration:2},
+  {id:'EX103',name:'Artificial Intelligence',date:'2026-10-06',students:8,duration:2}
+ ],
+ students:[
+  {id:'ST001',name:'Rajalakshmi R',year:'2nd Year',department:'AI & Data Science',section:'B',exam:'EX101'},
+  {id:'ST001',name:'Rajalakshmi R',year:'2nd Year',department:'AI & Data Science',section:'B',exam:'EX102'},
+  {id:'ST002',name:'Student 2',year:'2nd Year',department:'CSE',section:'A',exam:'EX101'},
+  {id:'ST002',name:'Student 2',year:'2nd Year',department:'CSE',section:'A',exam:'EX103'},
+  {id:'ST003',name:'Student 3',year:'3rd Year',department:'ECE',section:'A',exam:'EX101'},
+  {id:'ST004',name:'Student 4',year:'1st Year',department:'AI & Data Science',section:'A',exam:'EX101'},
+  {id:'ST005',name:'Student 5',year:'3rd Year',department:'CSE',section:'B',exam:'EX101'},
+  {id:'ST006',name:'Student 6',year:'2nd Year',department:'IT',section:'A',exam:'EX102'},
+  {id:'ST007',name:'Student 7',year:'1st Year',department:'ECE',section:'A',exam:'EX102'},
+  {id:'ST008',name:'Student 8',year:'3rd Year',department:'AI & Data Science',section:'B',exam:'EX102'},
+  {id:'ST009',name:'Student 9',year:'2nd Year',department:'CSE',section:'A',exam:'EX102'},
+  {id:'ST010',name:'Student 10',year:'4th Year',department:'IT',section:'A',exam:'EX102'},
+  {id:'ST011',name:'Student 11',year:'1st Year',department:'CSE',section:'B',exam:'EX103'},
+  {id:'ST012',name:'Student 12',year:'3rd Year',department:'ECE',section:'A',exam:'EX103'},
+  {id:'ST013',name:'Student 13',year:'2nd Year',department:'IT',section:'A',exam:'EX103'},
+  {id:'ST014',name:'Student 14',year:'4th Year',department:'AI & Data Science',section:'B',exam:'EX103'}
+ ],
+ rooms:[
+  {id:'R101',name:'Hall A',building:'Block A',floor:'1',capacity:12,rows:3,columns:4,available:true},
+  {id:'R102',name:'Hall B',building:'Block A',floor:'1',capacity:12,rows:3,columns:4,available:true},
+  {id:'R103',name:'Hall C',building:'Block B',floor:'2',capacity:12,rows:3,columns:4,available:true},
+  {id:'R104',name:'Hall D',building:'Block B',floor:'2',capacity:12,rows:3,columns:4,available:true}
+ ],
+ invigilators:[
+  {id:'I101',name:'Anita',available:true},{id:'I102',name:'Kumar',available:true},
+  {id:'I103',name:'Priya',available:true},{id:'I104',name:'Arun',available:true}
+ ],
+ slots:[
+  {id:'S1',label:'Morning',start:'09:00',end:'11:00'},
+  {id:'S2',label:'Afternoon',start:'13:00',end:'15:00'}
+ ],
+ timetable:[],
+ allocations:[]
+};
+
+let db;
+try{db=JSON.parse(localStorage.getItem('examease_data'))||structuredClone(initial)}catch(e){db=structuredClone(initial)}
+db.students=(db.students||[]).map(s=>({...s,year:s.year||'2nd Year',department:s.department||'AI & Data Science',section:s.section||'A'}));
+db.rooms=(db.rooms||[]).map(r=>({...r,building:r.building||'Main Block',floor:r.floor||'1',rows:r.rows||Math.ceil(Math.sqrt(r.capacity||1)),columns:r.columns||Math.ceil((r.capacity||1)/Math.ceil(Math.sqrt(r.capacity||1)))}));
+db.allocations=db.allocations||[];
+let page='dashboard';
+
+function save(){localStorage.setItem('examease_data',JSON.stringify(db))}
+function btn(t,fn,cl='primary'){return `<button class="${cl}" onclick="${fn}">${t}</button>`}
+function table(h,rows){return `<div class="table-wrap"><table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.join(''):`<tr><td colspan="${h.length}" class="empty">No records yet.</td></tr>`}</tbody></table></div>`}
+function stat(l,v,i,n){return `<div class="card"><span class="stat-icon">${i}</span><div class="stat-label">${l}</div><div class="stat-number">${v}</div><div class="muted">${n}</div></div>`}
+function shell(t,s,b){$('topTitle').textContent=t;$('content').innerHTML=`<div class="page-title"><div><h1>${t}</h1><div class="muted">${s}</div></div></div>${b}`}
+function go(p){page=p;document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render()}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+function render(){({dashboard,exams:examsPage,students:studentsPage,rooms:roomsPage,invigilators:staffPage,slots:slotsPage,timetable:timetablePage,seating:seatingPage,venue:venuePage,qr:qrPage,conflicts:conflictsPage,reports:reportsPage}[page]||dashboard)()}
+
+function examName(id){return db.exams.find(e=>e.id===id)?.name||id}
+function studentRows(examId){return db.students.filter(s=>s.exam===examId)}
+function allExamStudentIds(examId){return [...new Set(studentRows(examId).map(s=>s.id))]}
+function studentRecord(id,examId){return db.students.find(s=>s.id===id&&s.exam===examId)||db.students.find(s=>s.id===id)||{}}
+function allocationFor(id,examId){return db.allocations.find(a=>a.studentId===id&&a.examId===examId)}
+function roomName(id){return db.rooms.find(r=>r.id===id)?.name||id}
+function slotInfo(id){return db.slots.find(s=>s.id===id)||{}}
+function tokenFor(a){return a.qrToken||(a.qrToken=`EXE-${btoa(`${a.studentId}|${a.examId}|${a.date}|${a.seat}`).replace(/=/g,'').slice(0,28)}`)}
+
+function dashboard(){
+ let issues=checkConflicts(),scheduled=new Set(db.timetable.map(t=>t.examId)).size;
+ let totalStudents=new Set(db.students.map(s=>s.id)).size;
+ let assigned=db.allocations.length;
+ shell('Dashboard','Smart exam scheduling, dynamic venue allocation and intelligent seating.',
+ `<div class="stats">
+ ${stat('Total Exams',db.exams.length,'📝','Registered examinations')}
+ ${stat('Students',totalStudents,'👥','Unique students')}
+ ${stat('Rooms',db.rooms.length,'🏫','Configured halls')}
+ ${stat('Allocated Seats',assigned,'🪑','Student seat allocations')}
+ ${stat('Scheduled Exams',scheduled,'📅','Exams with timetable')}
+ ${stat('QR Codes',assigned,'▣','Venue QR records')}
+ ${stat('Seating Issues',issues.filter(x=>x.type.includes('Adjacent')).length,'⚠','Adjacent same-exam')}
+ ${stat('Total Issues',issues.length,'🔎','Validation findings')}
+ </div>
+ <div class="grid2">
+ <section class="card"><h2>Quick Actions</h2><div class="actions">
+ ${btn('➕ Add Exam',"go('exams')")}${btn('⚡ Generate Smart Schedule','generateSchedule()')}
+ ${btn('🪑 Generate Seating','generateSeating()','secondary')}${btn('▣ QR Management',"go('qr')",'secondary')}
+ </div><hr><div class="notice"><b>Smart rules:</b> avoid same room for a student on different dates, separate students writing the same exam, and use year/department to improve distribution.</div></section>
+ <section class="card"><h2>System Status</h2><p>Allocated seats: <b>${assigned}</b></p><p>QR records: <b>${assigned}</b></p><p>Detected issues: <b>${issues.length}</b></p><span class="badge ${issues.length?'warn':''}">${issues.length?'Review required':'Ready for validation'}</span></section>
+ </div>
+ <section class="card"><h2>Exam Records</h2>${table(['ID','Subject','Date','Students','Duration'],db.exams.map(e=>`<tr><td>${esc(e.id)}</td><td>${esc(e.name)}</td><td>${esc(e.date)}</td><td>${e.students}</td><td>${e.duration}h</td></tr>`))}</section>`)
+}
+
+function examsPage(){
+ shell('Exam Management','Add and manage examinations.',
+ `<section class="card"><h2>Add Exam</h2><form id="examForm" class="form-grid">
+ <div class="field"><label>Exam ID</label><input name="id" required placeholder="EX104"></div>
+ <div class="field"><label>Subject</label><input name="name" required></div>
+ <div class="field"><label>Date</label><input name="date" type="date" required></div>
+ <div class="field"><label>Students (expected)</label><input name="students" type="number" min="1" required></div>
+ <div class="field"><label>Duration (hours)</label><input name="duration" type="number" min="1" max="8" value="2" required></div>
+ <div class="full"><button class="primary">Save Exam</button></div></form></section>
+ <section class="card"><h2>All Exams</h2>${table(['ID','Subject','Date','Students','Duration','Action'],db.exams.map(e=>`<tr><td>${esc(e.id)}</td><td>${esc(e.name)}</td><td>${esc(e.date)}</td><td>${e.students}</td><td>${e.duration}h</td><td>${btn('Delete',`removeRecord('exams','${esc(e.id)}')`,'danger')}</td></tr>`))}</section>`);
+ $('examForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target),x={id:f.get('id').trim(),name:f.get('name').trim(),date:f.get('date'),students:+f.get('students'),duration:+f.get('duration')};if(db.exams.some(a=>a.id===x.id))return alert('Exam ID already exists');db.exams.push(x);clearGenerated();save();render()}
+}
+
+function studentsPage(){
+ shell('Student Registration','Add students with year, department and section. These fields are used by seating allocation.',
+ `<section class="card"><form id="regForm" class="form-grid">
+ <div class="field"><label>Student / Register ID</label><input name="id" required placeholder="ST015"></div>
+ <div class="field"><label>Student Name</label><input name="name" required></div>
+ <div class="field"><label>Year of Study</label><select name="year"><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select></div>
+ <div class="field"><label>Department</label><select name="department"><option>AI & Data Science</option><option>CSE</option><option>IT</option><option>ECE</option><option>EEE</option><option>Mechanical</option><option>Civil</option><option>Other</option></select></div>
+ <div class="field"><label>Section</label><input name="section" value="A"></div>
+ <div class="field"><label>Exam</label><select name="exam">${db.exams.map(e=>`<option value="${esc(e.id)}">${esc(e.id)} - ${esc(e.name)}</option>`).join('')}</select></div>
+ <div class="full"><button class="primary">Add Registration</button></div></form></section>
+ <section class="card"><h2>Registrations</h2>${table(['ID','Name','Year','Department','Section','Exam','Action'],db.students.map((s,i)=>`<tr><td>${esc(s.id)}</td><td>${esc(s.name)}</td><td>${esc(s.year)}</td><td>${esc(s.department)}</td><td>${esc(s.section)}</td><td>${esc(s.exam)}</td><td>${btn('Delete',`removeRegistration(${i})`,'danger')}</td></tr>`))}</section>`);
+ $('regForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target);db.students.push({id:f.get('id').trim(),name:f.get('name').trim(),year:f.get('year'),department:f.get('department'),section:f.get('section').trim()||'A',exam:f.get('exam')});clearGenerated();save();render()}
+}
+
+function roomsPage(){
+ shell('Room Management','Configure building, capacity and row/column seating layout.',
+ `<section class="card"><form id="roomForm" class="form-grid">
+ <div class="field"><label>Room ID</label><input name="id" required></div><div class="field"><label>Room Name</label><input name="name" required></div>
+ <div class="field"><label>Building</label><input name="building" value="Main Block"></div><div class="field"><label>Floor</label><input name="floor" value="1"></div>
+ <div class="field"><label>Rows</label><input name="rows" type="number" min="1" value="3" required></div><div class="field"><label>Columns</label><input name="columns" type="number" min="1" value="4" required></div>
+ <div class="field"><label>Capacity (auto)</label><input name="capacity" type="number" min="1" value="12" required></div>
+ <div class="field"><label>Availability</label><select name="available"><option value="true">Available</option><option value="false">Unavailable</option></select></div>
+ <div class="full"><button class="primary">Add Room</button></div></form></section>
+ <section class="card"><h2>Rooms</h2>${table(['ID','Building','Room','Capacity','Layout','Status','Actions'],db.rooms.map(r=>`<tr><td>${esc(r.id)}</td><td>${esc(r.building)}</td><td>${esc(r.name)}</td><td>${r.capacity}</td><td>${r.rows} × ${r.columns}</td><td>${r.available?'Available':'Unavailable'}</td><td>${btn(r.available?'Mark Unavailable':'Mark Available',`toggleAvailability('rooms','${esc(r.id)}')`,'secondary')} ${btn('Delete',`removeRecord('rooms','${esc(r.id)}')`,'danger')}</td></tr>`))}</section>`);
+ $('roomForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target),rows=+f.get('rows'),cols=+f.get('columns'),x={id:f.get('id').trim(),name:f.get('name').trim(),building:f.get('building').trim(),floor:f.get('floor').trim(),rows,columns:cols,capacity:Math.min(+f.get('capacity')||rows*cols,rows*cols),available:f.get('available')==='true'};if(db.rooms.some(a=>a.id===x.id))return alert('Room ID exists');db.rooms.push(x);clearGenerated();save();render()}
+}
+
+function staffPage(){
+ shell('Invigilators','Manage invigilator records and availability.',
+ `<section class="card"><form id="staffForm" class="form-grid"><div class="field"><label>Staff ID</label><input name="id" required></div><div class="field"><label>Name</label><input name="name" required></div><div class="field"><label>Availability</label><select name="available"><option value="true">Available</option><option value="false">Unavailable</option></select></div><div class="full"><button class="primary">Add Invigilator</button></div></form></section>
+ <section class="card"><h2>Staff List</h2>${table(['ID','Name','Availability','Actions'],db.invigilators.map(i=>`<tr><td>${esc(i.id)}</td><td>${esc(i.name)}</td><td>${i.available?'Available':'Unavailable'}</td><td>${btn(i.available?'Mark Unavailable':'Mark Available',`toggleAvailability('invigilators','${esc(i.id)}')`,'secondary')} ${btn('Delete',`removeRecord('invigilators','${esc(i.id)}')`,'danger')}</td></tr>`))}</section>`);
+ $('staffForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target),x={id:f.get('id').trim(),name:f.get('name').trim(),available:f.get('available')==='true'};if(db.invigilators.some(a=>a.id===x.id))return alert('Staff ID exists');db.invigilators.push(x);clearGenerated();save();render()}
+}
+
+function slotsPage(){
+ shell('Time Slots','Create exam sessions.',
+ `<section class="card"><form id="slotForm" class="form-grid"><div class="field"><label>Slot ID</label><input name="id" required placeholder="S3"></div><div class="field"><label>Session Name</label><input name="label" required placeholder="Evening"></div><div class="field"><label>Start</label><input type="time" name="start" required></div><div class="field"><label>End</label><input type="time" name="end" required></div><div class="full"><button class="primary">Add Time Slot</button></div></form></section>
+ <section class="card"><h2>Sessions</h2>${table(['ID','Session','Start','End','Action'],db.slots.map(s=>`<tr><td>${esc(s.id)}</td><td>${esc(s.label)}</td><td>${esc(s.start)}</td><td>${esc(s.end)}</td><td>${btn('Delete',`removeRecord('slots','${esc(s.id)}')`,'danger')}</td></tr>`))}</section>`);
+ $('slotForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target),x={id:f.get('id').trim(),label:f.get('label').trim(),start:f.get('start'),end:f.get('end')};if(db.slots.some(a=>a.id===x.id))return alert('Slot ID exists');if(x.start>=x.end)return alert('End must be after start');db.slots.push(x);clearGenerated();save();render()}
+}
+
+function generateSchedule(){
+ if(!db.exams.length||!db.slots.length)return alert('Add exams and slots first');
+ let rooms=db.rooms.filter(r=>r.available),staff=db.invigilators.filter(i=>i.available);
+ if(!rooms.length||!staff.length)return alert('Need an available room and invigilator');
+ let result=[],usedR=new Set(),usedI=new Set(),groups={};
+ db.students.forEach(s=>(groups[s.exam]??=new Set()).add(s.id));
+ let slots=[...db.slots].sort((a,b)=>a.start.localeCompare(b.start)),exams=[...db.exams].sort((a,b)=>b.students-a.students);
+ for(let e of exams){
+   let placed=false;
+   for(let offset=0;offset<60&&!placed;offset++){
+     let d=new Date(e.date+'T12:00:00');d.setDate(d.getDate()+offset);
+     let date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+     for(let s of slots){
+       let clash=result.some(t=>t.date===date&&t.slotId===s.id&&[...(groups[e.id]||[])].some(id=>(groups[t.examId]||new Set()).has(id)));
+       if(clash)continue;
+       for(let r of rooms){
+         if(r.capacity<Math.min(e.students,r.capacity)||usedR.has(`${date}|${s.id}|${r.id}`))continue;
+         let i=staff.find(x=>!usedI.has(`${date}|${s.id}|${x.id}`));if(!i)continue;
+         result.push({examId:e.id,date,slotId:s.id,roomId:r.id,invigilatorId:i.id});
+         usedR.add(`${date}|${s.id}|${r.id}`);usedI.add(`${date}|${s.id}|${i.id}`);placed=true;break
+       }
+       if(placed)break
+     }
+   }
+   if(!placed)alert(`Could not allocate ${e.name}. Check rooms, staff, slots and registrations.`)
+ }
+ db.timetable=result; db.allocations=[]; save(); generateSeating(); go('timetable')
+}
+
+function previousRooms(studentId, date){return new Set(db.allocations.filter(a=>a.studentId===studentId&&a.date!==date).map(a=>a.roomId))}
+
+function generateSeating(){
+ if(!db.timetable.length)return alert('Generate the timetable first.');
+ db.allocations=[];
+ let hardFailures=[];
+ for(let t of db.timetable){
+   let ids=allExamStudentIds(t.examId);
+   if(!ids.length)continue;
+   let room=db.rooms.find(r=>r.id===t.roomId);if(!room)continue;
+   let max=Math.min(room.capacity,room.rows*room.columns);
+   // If an exam exceeds one room, the current timetable should contain additional room assignments.
+   // For this prototype, create allocations for as many seats as the room provides.
+   let idsForRoom=ids.slice(0,max);
+   let seats=[];
+   for(let row=0;row<room.rows;row++)for(let col=0;col<room.columns;col++){
+     let n=row*room.columns+col+1;if(n<=max)seats.push({row,col,seat:`${String.fromCharCode(65+row)}-${String(n).padStart(2,'0')}`})
+   }
+   let placed=[];
+   for(let id of idsForRoom){
+     let s=studentRecord(id,t.examId), prev=previousRooms(id,t.date);
+     let candidates=seats.filter(x=>!placed.some(p=>p.seat===x.seat));
+     candidates.sort((a,b)=>seatPenalty(a,placed,s,prev,room)-seatPenalty(b,placed,s,prev,room));
+     let best=candidates[0];
+     if(!best){hardFailures.push(`${id} in ${room.name}`);continue}
+     placed.push({seat:best.seat,row:best.row,col:best.col,studentId:id});
+     db.allocations.push({studentId:id,studentName:s.name,examId:t.examId,date:t.date,slotId:t.slotId,roomId:t.roomId,seat:best.seat,year:s.year,department:s.department,section:s.section,qrToken:''})
+   }
+ }
+ save();
+ if(hardFailures.length)alert('Some students could not be seated: '+hardFailures.join(', '));
+ go('seating')
+}
+
+function seatPenalty(seat,placed,s,prev,room){
+ let p=0;
+ if(prev.has(room.id))p+=1000;
+ for(let q of placed){
+   let dr=Math.abs(q.row-seat.row),dc=Math.abs(q.col-seat.col);
+   if(dr<=1&&dc<=1){
+     let other=studentRecord(q.studentId,s.exam);
+     if(q.studentId===s.id)p+=100000;
+     // Same-exam is the strongest seating constraint.
+     if(q.examId===s.exam)p+=100000;
+     if(other.year===s.year)p+=500;
+     if(other.department===s.department)p+=300;
+   }
+ }
+ return p
+}
+
+function getSeatNeighbors(a){
+ let room=db.rooms.find(r=>r.id===a.roomId), seatNum=parseInt(String(a.seat).split('-')[1]||'1')-1;
+ let row=seatNum>=0?Math.floor(seatNum/room.columns):0,col=seatNum>=0?seatNum%room.columns:0;
+ return db.allocations.filter(x=>x.roomId===a.roomId&&x.date===a.date&&x.slotId===a.slotId).filter(x=>{
+   let n=parseInt(String(x.seat).split('-')[1]||'1')-1,nr=Math.floor(n/room.columns),nc=n%room.columns;
+   return Math.abs(nr-row)<=1&&Math.abs(nc-col)<=1&&x.studentId!==a.studentId;
+ })
+}
+
+function checkConflicts(){
+ let out=[],by={};
+ db.timetable.forEach(t=>{
+   let e=db.exams.find(x=>x.id===t.examId),r=db.rooms.find(x=>x.id===t.roomId),i=db.invigilators.find(x=>x.id===t.invigilatorId);
+   if(!e){out.push({type:'Missing exam',detail:t.examId});return}
+   if(!r)out.push({type:'Missing room',detail:e.name});
+   else if(!r.available)out.push({type:'Unavailable room',detail:r.name});
+   if(i&&!i.available)out.push({type:'Unavailable invigilator',detail:i.name});
+   (by[t.date+'|'+t.slotId]??=[]).push(t)
+ });
+ Object.values(by).forEach(a=>{for(let x=0;x<a.length;x++)for(let y=x+1;y<a.length;y++){
+   if(a[x].roomId===a[y].roomId)out.push({type:'Room clash',detail:`${a[x].examId} and ${a[y].examId}`});
+   if(a[x].invigilatorId===a[y].invigilatorId)out.push({type:'Staff clash',detail:`${a[x].invigilatorId}: ${a[x].examId} and ${a[y].examId}`});
+ }});
+ let groups={};db.students.forEach(s=>(groups[s.id]??=new Set()).add(s.exam));
+ Object.entries(groups).forEach(([id,ids])=>{let a=[...ids];for(let x=0;x<a.length;x++)for(let y=x+1;y<a.length;y++)for(let p of db.timetable.filter(t=>t.examId===a[x]))for(let q of db.timetable.filter(t=>t.examId===a[y]))if(p.date===q.date&&p.slotId===q.slotId)out.push({type:'Student clash',detail:`${id}: ${p.examId} and ${q.examId}`})});
+ // Seat-level checks
+ db.allocations.forEach(a=>{
+   getSeatNeighbors(a).forEach(n=>{
+     if(n.examId===a.examId && n.studentId>a.studentId)out.push({type:'Adjacent same-exam',detail:`${a.studentId} and ${n.studentId} (${examName(a.examId)}) in ${roomName(a.roomId)}`});
+   });
+   let repeats=db.allocations.filter(x=>x.studentId===a.studentId&&x.date!==a.date&&x.roomId===a.roomId);
+   if(repeats.some(x=>x.examId!==a.examId))out.push({type:'Repeated venue',detail:`${a.studentId} uses ${roomName(a.roomId)} on multiple dates`});
+ });
+ let seatKeys=new Set();db.allocations.forEach(a=>{let k=`${a.date}|${a.slotId}|${a.roomId}|${a.seat}`;if(seatKeys.has(k))out.push({type:'Duplicate seat',detail:k});seatKeys.add(k)});
+ return out;
+}
+
+function timetablePage(){
+ shell('Exam Timetable','Generate, review, print and repair allocations.',
+ `<div class="notice">The smart scheduler considers student clashes, room capacity/availability and invigilators. Seating adds venue-history and adjacent-exam constraints.</div>
+ <section class="card"><div class="actions no-print">${btn('⚡ Generate / Repair Schedule','generateSchedule()')}${btn('🪑 Generate Seating','generateSeating()','secondary')}${btn('Validate',"go('conflicts')",'secondary')}${btn('Print / Save PDF','window.print()','secondary')}${btn('Clear','clearTimetable()','danger')}</div><hr>
+ ${table(['Exam','Subject','Date','Session','Room','Invigilator','Students','Action'],db.timetable.map(t=>{let e=db.exams.find(x=>x.id===t.examId)||{},r=db.rooms.find(x=>x.id===t.roomId)||{},i=db.invigilators.find(x=>x.id===t.invigilatorId)||{},s=slotInfo(t.slotId);return `<tr><td>${esc(t.examId)}</td><td>${esc(e.name)}</td><td>${esc(t.date)}</td><td>${esc(s.label||t.slotId)} ${esc(s.start||'')}–${esc(s.end||'')}</td><td>${esc(r.name||t.roomId)}</td><td>${esc(i.name||t.invigilatorId)}</td><td>${allExamStudentIds(t.examId).length}</td><td>${btn('Remove',`removeAssignment('${esc(t.examId)}')`,'danger')}</td></tr>`}))}</section>`)
+}
+
+function seatingPage(){
+ let rooms=[...new Set(db.allocations.map(a=>a.roomId))];
+ shell('Seating Arrangement','Visualize and print student seating by exam, date and room.',
+ `<section class="card"><div class="form-grid">
+ <div class="field"><label>Exam</label><select id="seatExam" onchange="renderSeatingRoom()">${db.exams.map(e=>`<option value="${e.id}">${esc(e.id)} - ${esc(e.name)}</option>`).join('')}</select></div>
+ <div class="field"><label>Room</label><select id="seatRoom" onchange="renderSeatingRoom()">${rooms.map(r=>`<option value="${r}">${esc(roomName(r))}</option>`).join('')}</select></div>
+ </div><div id="seatView"></div></section>
+ <section class="card"><h2>Seating Rules</h2><div class="notice">🔴 Same-exam students are treated as a hard separation rule when possible. Year and department separation are soft preferences. Repeated venue is penalized across different dates.</div>
+ ${table(['Student','Year','Department','Exam','Date','Room','Seat','QR'],db.allocations.map(a=>`<tr><td>${esc(a.studentName)}</td><td>${esc(a.year)}</td><td>${esc(a.department)}</td><td>${esc(examName(a.examId))}</td><td>${esc(a.date)}</td><td>${esc(roomName(a.roomId))}</td><td><b>${esc(a.seat)}</b></td><td>${btn('View QR',`showQR('${a.studentId}','${a.examId}')`,'secondary')}</td></tr>`))}</section>`);
+ renderSeatingRoom();
+}
+function renderSeatingRoom(){
+ let ex=$('seatExam')?.value,roomId=$('seatRoom')?.value;if(!ex||!roomId)return;
+ let t=db.timetable.find(x=>x.examId===ex&&x.roomId===roomId),room=db.rooms.find(r=>r.id===roomId);
+ let as=db.allocations.filter(a=>a.examId===ex&&a.roomId===roomId);
+ let map=new Map(as.map(a=>[a.seat,a]));
+ let cells=[];
+ for(let r=0;r<room.rows;r++)for(let c=0;c<room.columns;c++){let seat=`${String.fromCharCode(65+r)}-${String(r*room.columns+c+1).padStart(2,'0')}`,a=map.get(seat);cells.push(a?`<div class="seat"><div class="seatno">${seat}</div><b>${esc(a.studentId)}</b><br>${esc(a.year)}<br>${esc(a.department)}</div>`:`<div class="seat empty"><div class="seatno">${seat}</div>Empty</div>`)}
+ $('seatView').innerHTML=`<hr><div class="actions no-print">${btn('Print Seating','window.print()')}</div><h2>${esc(room?.name||roomId)} — ${esc(examName(ex))}</h2><div class="muted">${t?esc(t.date)+' · '+esc(slotInfo(t.slotId).label||''):''} · ${as.length} students</div><div class="seat-grid" style="grid-template-columns:repeat(${room.columns},minmax(85px,1fr))">${cells.join('')}</div>`;
+}
+
+function venuePage(){
+ shell('Student Venue','Student-facing venue lookup using register number and exam ID.',
+ `<section class="card"><form id="venueForm" class="form-grid"><div class="field"><label>Register Number</label><input id="venueStudent" required placeholder="ST001"></div><div class="field"><label>Exam</label><select id="venueExam">${db.exams.map(e=>`<option value="${e.id}">${esc(e.id)} - ${esc(e.name)}</option>`).join('')}</select></div><div class="full"><button class="primary">Find My Venue</button></div></form><div id="venueResult"></div></section>`);
+ $('venueForm').onsubmit=e=>{e.preventDefault();showVenue($('venueStudent').value.trim(),$('venueExam').value)}
+}
+function showVenue(studentId,examId){
+ let a=allocationFor(studentId,examId),s=studentRecord(studentId,examId),t=db.timetable.find(x=>x.examId===examId&&x.date===a?.date&&x.roomId===a?.roomId);
+ if(!a)return $('venueResult').innerHTML=`<div class="notice">No venue allocation found. Generate the timetable and seating arrangement first.</div>`;
+ let r=db.rooms.find(x=>x.id===a.roomId),slot=slotInfo(a.slotId);tokenFor(a);save();
+ $('venueResult').innerHTML=`<hr><div class="card student-card"><div><h2>🎫 Exam Venue</h2><p><b>${esc(s.name)}</b> (${esc(s.id)})</p><p>${esc(s.year)} · ${esc(s.department)} · Section ${esc(s.section)}</p><p><b>${esc(examName(a.examId))}</b></p><p>📅 ${esc(a.date)} &nbsp; 🕒 ${esc(slot.start||'')}–${esc(slot.end||'')}</p><p>🏫 ${esc(r?.building||'')} · ${esc(r?.name||a.roomId)}</p><p>🪑 <b>Seat ${esc(a.seat)}</b></p><p>⏰ Reporting time: <b>${esc(slot.start||'')} (30 minutes before exam)</b></p></div><div class="qr-box"><canvas id="venueQR" width="180" height="180" class="qr-canvas"></canvas><small>Scan to view venue</small>${btn('Print Hall Ticket','printHallTicket()')}</div></div>`;
+ drawQR('venueQR',qrPayload(a));
+}
+function qrPayload(a){
+ tokenFor(a);
+ if(db.qrMode==='link')return `${location.origin}${location.pathname}?venue=${encodeURIComponent(tokenFor(a))}`;
+ let s=studentRecord(a.studentId,a.examId),r=db.rooms.find(x=>x.id===a.roomId)||{},sl=slotInfo(a.slotId),clean=v=>String(v??'').replace(/[^\x20-\x7E]/g,'-');
+ return ['EXAMEASE SEATING',
+  `Name: ${clean(a.studentName)} (${clean(a.studentId)})`,
+  `${clean(a.year)} | ${clean(a.department)} | Sec ${clean(a.section)}`,
+  `Exam: ${clean(examName(a.examId))}`,
+  `Date: ${clean(a.date)}`,
+  `Time: ${clean(sl.start||'')}-${clean(sl.end||'')}`,
+  `Venue: ${clean(r.building||'')}, ${clean(r.name||a.roomId)}`,
+  `Seat: ${clean(a.seat)}`,
+  `Ref: ${a.qrToken}`].join('\n')
+}
+function printHallTicket(){window.print()}
+
+function qrPage(){
+ shell('QR Management','Generate, view and print QR codes for student exam venues.',
+ `<section class="card"><div class="actions">${btn('Generate / Refresh All QR','generateAllQR()')}${btn('Print QR List','window.print()')}<label class="muted" style="display:flex;align-items:center;gap:8px">QR content:<select id="qrMode" onchange="setQRMode(this.value)"><option value="details" ${db.qrMode!=='link'?'selected':''}>Seating details (scan on any phone, works offline)</option><option value="link" ${db.qrMode==='link'?'selected':''}>Venue link (needs site hosted online)</option></select></label></div><div class="muted" style="margin-top:8px">Tip: click <b>View QR</b> on a student, then scan it with your phone camera or a QR app to see the seating details.</div><hr>
+ ${table(['Student','Exam','Date','Room','Seat','QR Status','Action'],db.allocations.map(a=>`<tr><td>${esc(a.studentName)} (${esc(a.studentId)})</td><td>${esc(examName(a.examId))}</td><td>${esc(a.date)}</td><td>${esc(roomName(a.roomId))}</td><td><b>${esc(a.seat)}</b></td><td><span class="badge">${a.qrToken?'Generated':'Pending'}</span></td><td>${btn('View QR',`showQR('${a.studentId}','${a.examId}')`,'secondary')}</td></tr>`))}</section><section class="card"><div id="qrViewer" class="qr-box"><span class="muted">Select View QR.</span></div></section>`)
+}
+function setQRMode(m){db.qrMode=m;save();let c=$('qrCanvas');if(c&&c.dataset.sid)showQR(c.dataset.sid,c.dataset.eid)}
+function generateAllQR(){db.allocations.forEach(tokenFor);save();render()}
+function showQR(studentId,examId){
+ let a=allocationFor(studentId,examId);if(!a)return alert('Allocation not found');tokenFor(a);save();
+ let box=$('qrViewer');if(!box){go('qr');setTimeout(()=>showQR(studentId,examId),50);return}
+ let r=db.rooms.find(x=>x.id===a.roomId)||{},sl=slotInfo(a.slotId);
+ box.innerHTML=`<h2>${esc(a.studentName)} — ${esc(examName(a.examId))}</h2><canvas id="qrCanvas" width="260" height="260" class="qr-canvas" data-sid="${esc(a.studentId)}" data-eid="${esc(a.examId)}" data-name="ExamEase-${esc(a.studentId)}-${esc(a.examId)}"></canvas><div><b>Scan to check your seating</b></div><div class="muted">${esc(a.date)} · ${esc(sl.start||'')}–${esc(sl.end||'')} · ${esc(r.building||'')} · ${esc(roomName(a.roomId))} · Seat <b>${esc(a.seat)}</b></div><div class="actions">${btn('Download QR','downloadCanvasQR()')}${btn('Print QR','window.print()','secondary')}</div>`;
+ drawQR('qrCanvas',qrPayload(a));
+ box.scrollIntoView({behavior:'smooth',block:'center'});
+}
+/* ===== Real QR Code encoder (ISO/IEC 18004, byte mode, ECC level M, versions 1-20). Works fully offline. ===== */
+const QREngine=(()=>{
+const ECC=[-1,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26];
+const BLK=[-1,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16];
+const rawModules=v=>{let r=(16*v+128)*v+64;if(v>=2){let a=Math.floor(v/7)+2;r-=(25*a-10)*a-55;if(v>=7)r-=36}return r};
+const mul=(x,y)=>{let z=0;for(let i=7;i>=0;i--){z=(z<<1)^((z>>>7)*0x11D);z^=((y>>>i)&1)*x}return z};
+function rsDivisor(deg){let r=new Array(deg).fill(0);r[deg-1]=1;let root=1;for(let i=0;i<deg;i++){for(let j=0;j<deg;j++){r[j]=mul(r[j],root);if(j+1<deg)r[j]^=r[j+1]}root=mul(root,2)}return r}
+function rsRemainder(data,div){let r=div.map(()=>0);for(const b of data){const f=b^r.shift();r.push(0);div.forEach((c,i)=>r[i]^=mul(c,f))}return r}
+function encode(text){
+  const bytes=Array.from(new TextEncoder().encode(text));
+  let v=1;for(;v<=20;v++){const cap=Math.floor(rawModules(v)/8)-ECC[v]*BLK[v];if(4+(v<=9?8:16)+8*bytes.length<=cap*8)break}
+  if(v>20)throw new Error('QR payload too long');
+  const size=v*4+17,cap=Math.floor(rawModules(v)/8)-ECC[v]*BLK[v];
+  // --- data bits
+  let bits=[];const put=(val,len)=>{for(let i=len-1;i>=0;i--)bits.push((val>>>i)&1)};
+  put(4,4);put(bytes.length,v<=9?8:16);bytes.forEach(b=>put(b,8));
+  put(0,Math.min(4,cap*8-bits.length));while(bits.length%8)bits.push(0);
+  for(let p=0xEC;bits.length<cap*8;p^=0xEC^0x11)put(p,8);
+  let data=[];for(let i=0;i<bits.length;i+=8)data.push(parseInt(bits.slice(i,i+8).join(''),2));
+  // --- Reed-Solomon + interleave
+  const nb=BLK[v],el=ECC[v],raw=Math.floor(rawModules(v)/8),ns=nb-raw%nb,sl=Math.floor(raw/nb),div=rsDivisor(el);
+  let blocks=[],k=0;for(let i=0;i<nb;i++){let d=data.slice(k,k+sl-el+(i<ns?0:1));k+=d.length;const e=rsRemainder(d,div);if(i<ns)d.push(0);blocks.push(d.concat(e))}
+  let all=[];for(let i=0;i<blocks[0].length;i++)blocks.forEach((b,j)=>{if(i!==sl-el||j>=ns)all.push(b[i])});
+  // --- matrix
+  const M=Array.from({length:size},()=>Array(size).fill(false)),F=Array.from({length:size},()=>Array(size).fill(false));
+  const set=(x,y,d)=>{M[y][x]=d;F[y][x]=true};
+  for(let i=0;i<size;i++){set(6,i,i%2===0);set(i,6,i%2===0)}
+  const finder=(cx,cy)=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=Math.max(Math.abs(dx),Math.abs(dy)),x=cx+dx,y=cy+dy;if(x>=0&&x<size&&y>=0&&y<size)set(x,y,d!==2&&d!==4)}};
+  finder(3,3);finder(size-4,3);finder(3,size-4);
+  let pos=[];if(v>1){const na=Math.floor(v/7)+2,step=Math.ceil((v*4+4)/(na*2-2))*2;pos=[6];for(let p=size-7;pos.length<na;p-=step)pos.splice(1,0,p)}
+  pos.forEach((cy,i)=>pos.forEach((cx,j)=>{if((i===0&&j===0)||(i===0&&j===pos.length-1)||(i===pos.length-1&&j===0))return;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(cx+dx,cy+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1)}));
+  const fmt=mask=>{const d=(0<<3)|mask;let r=d;for(let i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);const b=((d<<10)|r)^0x5412,g=i=>((b>>>i)&1)!==0;
+    for(let i=0;i<=5;i++)set(8,i,g(i));set(8,7,g(6));set(8,8,g(7));set(7,8,g(8));for(let i=9;i<15;i++)set(14-i,8,g(i));
+    for(let i=0;i<8;i++)set(size-1-i,8,g(i));for(let i=8;i<15;i++)set(8,size-15+i,g(i));set(8,size-8,true)};
+  fmt(0);
+  if(v>=7){let r=v;for(let i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);const b=(v<<12)|r;for(let i=0;i<18;i++){const bit=((b>>>i)&1)!==0,a=size-11+i%3,c=Math.floor(i/3);set(a,c,bit);set(c,a,bit)}}
+  // --- place codewords
+  let i=0;for(let right=size-1;right>=1;right-=2){if(right===6)right=5;for(let vert=0;vert<size;vert++)for(let j=0;j<2;j++){const x=right-j,up=((right+1)&2)===0,y=up?size-1-vert:vert;if(!F[y][x]&&i<all.length*8){M[y][x]=((all[i>>>3]>>>(7-(i&7)))&1)!==0;i++}}}
+  // --- masking
+  const maskFn=[(x,y)=>(x+y)%2===0,(x,y)=>y%2===0,(x,y)=>x%3===0,(x,y)=>(x+y)%3===0,(x,y)=>(Math.floor(x/3)+Math.floor(y/2))%2===0,(x,y)=>x*y%2+x*y%3===0,(x,y)=>(x*y%2+x*y%3)%2===0,(x,y)=>((x+y)%2+x*y%3)%2===0];
+  const applyMask=m=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(!F[y][x]&&maskFn[m](x,y))M[y][x]=!M[y][x]};
+  const penalty=()=>{let p=0,dark=0;const lines=[];
+    for(let y=0;y<size;y++){lines.push(M[y].map(b=>b?1:0).join(''));}
+    for(let x=0;x<size;x++){let s='';for(let y=0;y<size;y++)s+=M[y][x]?1:0;lines.push(s)}
+    lines.forEach(s=>{const runs=s.match(/0+|1+/g)||[];runs.forEach(r=>{if(r.length>=5)p+=r.length-2});p+=40*((s.match(/(?=00001011101|10111010000)/g)||[]).length)});
+    for(let y=0;y<size;y++)for(let x=0;x<size;x++){if(M[y][x])dark++;if(x<size-1&&y<size-1&&M[y][x]===M[y][x+1]&&M[y][x]===M[y+1][x]&&M[y][x]===M[y+1][x+1])p+=3}
+    p+=Math.floor(Math.abs(dark*20-size*size*10)/(size*size))*10;return p};
+  let best=0,bp=Infinity;for(let m=0;m<8;m++){applyMask(m);fmt(m);const p=penalty();if(p<bp){bp=p;best=m}applyMask(m)}
+  applyMask(best);fmt(best);
+  return {size,modules:M,version:v};
+}
+function draw(canvas,text,target){
+  const q=encode(text),quiet=4,total=q.size+quiet*2,scale=Math.max(3,Math.floor((target||canvas.width)/total));
+  canvas.width=canvas.height=total*scale;const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#000';
+  for(let y=0;y<q.size;y++)for(let x=0;x<q.size;x++)if(q.modules[y][x])ctx.fillRect((x+quiet)*scale,(y+quiet)*scale,scale,scale);
+  return q;
+}
+return {encode,draw};
+})();
+
+function drawQR(id,text){
+ let c=$(id);if(!c)return;
+ try{QREngine.draw(c,text,c.dataset.size?+c.dataset.size:(c.getAttribute('width')|0)||220)}
+ catch(err){let x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.fillStyle='#b91c1c';x.font='12px sans-serif';x.fillText('QR error: '+err.message,8,20)}
+}
+function downloadCanvasQR(){let c=$('qrCanvas')||$('venueQR');if(!c)return;let a=document.createElement('a');a.href=c.toDataURL('image/png');a.download=(c.dataset.name||'ExamEase-QR')+'.png';a.click()}
+
+function conflictsPage(){
+ let a=checkConflicts();
+ shell('Conflict Checker','Validate timetable, venue and seating constraints.',
+ `<div class="stats">${stat('Total Issues',a.length,'⚠','Detected')}${stat('Room Clashes',a.filter(x=>x.type.includes('Room')).length,'🏫','Room')}${stat('Student Clashes',a.filter(x=>x.type.includes('Student')).length,'👥','Time clashes')}${stat('Adjacent Same Exam',a.filter(x=>x.type.includes('Adjacent')).length,'🪑','Seating')}</div>
+ <section class="card"><div class="actions no-print">${btn('Run Validation',"go('conflicts')")}${btn('Repair / Regenerate','generateSeating()','secondary')}</div><hr>${a.length?table(['Issue','Details','Status'],a.map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(x.detail)}</td><td><span class="badge bad">Review</span></td></tr>`)):'<div class="empty">✓ No issues detected by the current validator.</div>'}</section>`)
+}
+
+function reportsPage(){
+ let done=new Set(db.timetable.map(t=>t.examId)),left=db.exams.filter(e=>!done.has(e.id));
+ shell('Reports','Review coverage and export timetable, seating and QR data.',
+ `<div class="stats">${stat('Total Exams',db.exams.length,'📝','Exam records')}${stat('Allocated Seats',db.allocations.length,'🪑','Seat allocations')}${stat('Unallocated Exams',left.length,'⏳','Awaiting schedule')}${stat('Issues',checkConflicts().length,'⚠','Validation issues')}</div>
+ <section class="card"><div class="actions no-print">${btn('Print / Save PDF','window.print()')}${btn('Export Timetable CSV','exportTimetableCSV()','secondary')}${btn('Export Seating CSV','exportSeatingCSV()','secondary')}${btn('Export All Data JSON','exportJSON()','secondary')}</div><hr><h2>Unallocated Exams</h2>${table(['ID','Subject','Date','Students'],left.map(e=>`<tr><td>${esc(e.id)}</td><td>${esc(e.name)}</td><td>${esc(e.date)}</td><td>${e.students}</td></tr>`))}</section>`)
+}
+
+function removeRecord(c,id){if(!confirm('Delete this record?'))return;db[c]=db[c].filter(x=>x.id!==id);if(c==='exams')db.students=db.students.filter(s=>s.exam!==id);db.timetable=db.timetable.filter(t=>c==='exams'?t.examId!==id:c==='rooms'?t.roomId!==id:c==='invigilators'?t.invigilatorId!==id:c==='slots'?t.slotId!==id:true);clearGenerated(false);save();render()}
+function removeRegistration(i){db.students.splice(i,1);clearGenerated();save();render()}
+function toggleAvailability(c,id){let x=db[c].find(a=>a.id===id);if(x){x.available=!x.available;clearGenerated();save();render()}}
+function removeAssignment(id){db.timetable=db.timetable.filter(t=>t.examId!==id);db.allocations=db.allocations.filter(a=>a.examId!==id);save();render()}
+function clearTimetable(){if(confirm('Clear all timetable and seating allocations?')){db.timetable=[];db.allocations=[];save();render()}}
+function clearGenerated(saveNow=true){db.timetable=[];db.allocations=[];if(saveNow)save()}
+function download(name,text,type){let u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
+function exportTimetableCSV(){let rows=[['Exam ID','Subject','Date','Slot','Room','Invigilator'],...db.timetable.map(t=>[t.examId,examName(t.examId),t.date,slotInfo(t.slotId).label||t.slotId,roomName(t.roomId),t.invigilatorId])];download('examease-timetable.csv',rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n'),'text/csv;charset=utf-8')}
+function exportSeatingCSV(){let rows=[['Student ID','Student Name','Year','Department','Exam','Date','Room','Seat','QR Token'],...db.allocations.map(a=>[a.studentId,a.studentName,a.year,a.department,examName(a.examId),a.date,roomName(a.roomId),a.seat,tokenFor(a)])];download('examease-seating.csv',rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n'),'text/csv;charset=utf-8')}
+function exportJSON(){download('examease-data.json',JSON.stringify(db,null,2),'application/json')}
+
+// Support direct QR/venue links: ?venue=TOKEN
+function handleVenueToken(){
+ let token=new URLSearchParams(location.search).get('venue');if(!token)return;
+ let a=db.allocations.find(x=>tokenFor(x)===token);if(a){go('venue');setTimeout(()=>showVenue(a.studentId,a.examId),0)}
+}
+save();render();handleVenueToken();
+</script>
+</body></html>
